@@ -1,5 +1,5 @@
 const AuthImagePattern = ({ title, subtitle }) => {
-    console.log("AuthImagePattern rendered"); // 🔍 Debug
+    //console.log("AuthImagePattern rendered"); // 🔍 Debug
   return (
     <div className="flex items-center justify-center bg-base-200 p-12">
       {" "}

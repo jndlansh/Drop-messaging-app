@@ -72,6 +72,7 @@ export const login = async (req, res) => {
             fullName: user.fullName,
             email: user.email,
             profilePic: user.profilePic,
+            createdAt: user.createdAt,
         });
     } catch (error) {
         console.log("Error in login controller", error.message);
@@ -89,9 +90,7 @@ export const logout = (req, res) => {
         res.status(500).json({ message: "Internal server error" });
     }
 }
-
 export const updateProfilePic = async (req, res) => {
-    //logic for updating profile picture
     try {
         const { profilePic } = req.body;
         const userId = req.user._id;
@@ -100,24 +99,61 @@ export const updateProfilePic = async (req, res) => {
             return res.status(400).json({ message: "Profile picture is required" });
         }
 
-        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        console.log("Cloudinary config in runtime:", {
+            cloud_name: cloudinary.config().cloud_name,
+            api_key: cloudinary.config().api_key,
+            api_secret: cloudinary.config().api_secret ? "[HIDDEN]" : null
+        });
+
+
+        // upload directly from Base64
+        const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+            upload_preset: "profile_pics",
+        });
+
+
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { profilePic: uploadResponse.secure_url },
             { new: true }
         );
-        res.status(200).json(updatedUser)
+
+        res.status(200).json(updatedUser);
     } catch (error) {
-        console.log("Error in updateProfilePic controller", error.message);
+        console.error("Error in updateProfilePic controller:", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+// export const updateProfilePic = async (req, res) => {
+//     //logic for updating profile picture
+//     try {
+//         const { profilePic } = req.body;
+//         const userId = req.user._id;
+
+//         if (!profilePic) {
+//             return res.status(400).json({ message: "Profile picture is required" });
+//         }
+
+//         const uploadResponse = await cloudinary.uploader.upload(profilePic);
+//         const updatedUser = await User.findByIdAndUpdate(
+//             userId,
+//             { profilePic: uploadResponse.secure_url },
+//             { new: true }
+//         );
+//         res.status(200).json(updatedUser)
+//     } catch (error) {
+//         console.log("Error in updateProfilePic controller", error.message);
+//         res.status(500).json({ message: "Internal server error" });
+//     }
+// };
 
 export const checkAuth = (req, res) => {
     try {
         res.status(200).json(req.user);
     } catch (error) {
-        console.log("Error in checkAuth controller", error.message );
-        res.status(500).json({ message: "Internal server error" });         
+        console.log("Error in checkAuth controller", error.message);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
